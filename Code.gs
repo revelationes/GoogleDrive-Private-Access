@@ -14,48 +14,49 @@ function Start() {
   // Pass the ID of your Google Drive folder below (in "YOUR_FOLDER_ID") or if you want to restrcit permission to all your folder in Google Drive Apps 
   // then uncomment the line below and comment the line after
   // var rootf = DriveApp.getRootFolder();
-  var rootf = DriveApp.getFolderById('1CfRFGs5OIb3TCbZDmvuY1Bi6LiMye3Al');                         // Put your Google Drive folder in this line
-  FolderExplorer(rootf);  
+  var rootf = DriveApp.getFolderById('YOUR_FOLDER_ID');                         // Put your Google Drive folder in this line
+  var level = 0;
+  FolderExplorer(rootf, level);  
 }
 
-function FolderExplorer(folder) {
-  Logger.log("EXPLORING DIRECTORY '" + folder.getName() + "'");
+function FolderExplorer(folder, level) {
+  var level = level + 1;
+  Logger.log("EXPLORING DIRECTORY '" + folder.getName() + "' (level " + level + ") ");
 
   //Removing files permission
-  Logger.log("removing files permissions for '" + folder.getName() + "' directory");
+  Logger.log("Removing files permissions for '" + folder.getName() + "' directory");
   var files = folder.searchFiles('visibility != "limited"');                                       // Searching for files with permission other than PRIVATE 
+  if (files.hasNext() == false) {
+    Logger.log("All files in the directory '" + folder.getName() + "' are already private or there is no such file");
+  }
   while (files.hasNext()) {
     var file = files.next();
-    if (file.getId() == null) {
-    }
-    else {
-        Logger.log("removing file permissions for '" + file.getName() + "'");
-        file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                        // Restricting access to public files 
-        Logger.log("completed removing file permissions for '" + file.getName() + "'");
-    }
+    Logger.log("Removing file permissions for '" + file.getName() + "' in the directory '" + folder.getName() + "'");
+    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                        // Restricting access to public files 
+    Logger.log("Completed removing file permissions for '" + file.getName() + "'");
   }
-  Logger.log("completed removing files permissions for '" + folder.getName() + "' directory");
   
   var folders = folder.getFolders();
   while (folders.hasNext()) {
     
-    //removing folder permission
+    //Removing folder permission
     var folder = folders.next();
     var isPrivate = folder.getSharingAccess();
-    Logger.log("removing directory permissions for '" + folder.getName() + "'");
-    if (isPrivate == DriveApp.Access.PRIVATE) {
-      Logger.log("directory '" + folder.getName() + "' is already private");
+    var isView = folder.getSharingPermission();
+    Logger.log("Removing directory permissions for '" + folder.getName() + "'");
+    if (isPrivate == DriveApp.Access.PRIVATE && (isView == DriveApp.Permission.VIEW || isView == DriveApp.Permission.NONE)) {
+      Logger.log("Directory '" + folder.getName() + "' is already private");
     }
     else {
       folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                          // Restricting access to public folders  
       var users = folder.getEditors();
       for (var i = 0; i < users.length; i++) {
         folder.removeEditor(users[i].getEmail());
-        Logger.log("completed removing directory permissions for '" + folder.getName() + "'");
+        Logger.log("Completed removing directory permissions for '" + folder.getName() + "'");
       }
     
     }
-  FolderExplorer(folder);                                                                           // Iterate through child folders and repeat the process  
+  FolderExplorer(folder, level);                                                                           // Iterate through child folders and repeat the process  
   //    break;
   }
 }
