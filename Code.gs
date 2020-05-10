@@ -6,6 +6,7 @@
        "https://www.googleapis.com/auth/spreadsheets", 
        "https://www.googleapis.com/auth/spreadsheets.currentonly"],
    in the appscript.json.
+   Run 'Start' to begin.
    Enjoy!      
 */
 
