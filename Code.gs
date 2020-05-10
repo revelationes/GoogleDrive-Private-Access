@@ -40,16 +40,23 @@ function FolderExplorer(folder) {
     
     //removing folder permission
     var folder = folders.next();
-    Logger.log("removing folder permissions for '" + folder.getName() + "'");
-    folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                          // Restricting access to public folders  
-    var users = folder.getEditors();
-    for (var i = 0; i < users.length; i++) {
-      folder.removeEditor(users[i].getEmail());
-      Logger.log("completed removing folder permissions for '" + folder.getName() + "'");
+    var isPrivate = folder.getSharingAccess();
+    Logger.log("removing directory permissions for '" + folder.getName() + "'");
+    if (isPrivate == DriveApp.Access.PRIVATE) {
+      Logger.log("directory '" + folder.getName() + "' is already private");
     }
-    FolderExplorer(folder);                                                                        // Iterate through child folders and repeat the process
-  }
+    else {
+      folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                          // Restricting access to public folders  
+      var users = folder.getEditors();
+      for (var i = 0; i < users.length; i++) {
+        folder.removeEditor(users[i].getEmail());
+        Logger.log("completed removing directory permissions for '" + folder.getName() + "'");
+      }
+    
+    }
+  FolderExplorer(folder);                                                                           // Iterate through child folders and repeat the process  
   //    break;
+  }
 }
 
 
