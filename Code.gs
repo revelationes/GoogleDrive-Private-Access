@@ -6,14 +6,14 @@
        "https://www.googleapis.com/auth/spreadsheets", 
        "https://www.googleapis.com/auth/spreadsheets.currentonly"],
    in the appscript.json.
-   Run 'Start' to begin.
    Enjoy!      
 */
 
-function Start() {
+function doGet() {
   // Pass the ID of your Google Drive folder below (in "YOUR_FOLDER_ID") or if you want to restrcit permission to all your folder in Google Drive Apps 
   // then uncomment the line below and comment the line after
   // var rootf = DriveApp.getRootFolder();
+  Logger.log("Starting");
   var rootf = DriveApp.getFolderById('YOUR_FOLDER_ID');                         // Put your Google Drive folder in this line
   var level = 0;
   FolderExplorer(rootf, level);  
@@ -32,7 +32,7 @@ function FolderExplorer(folder, level) {
   while (files.hasNext()) {
     var file = files.next();
     Logger.log("Removing file permissions for '" + file.getName() + "' in the directory '" + folder.getName() + "'");
-    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                        // Restricting access to public files 
+    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                            // Restricting access to public files 
     Logger.log("Completed removing file permissions for '" + file.getName() + "'");
   }
   
@@ -56,11 +56,48 @@ function FolderExplorer(folder, level) {
       }
     
     }
-  FolderExplorer(folder, level);                                                                           // Iterate through child folders and repeat the process  
+  FolderExplorer(folder, level);                                                                     // Iterate through child folders and repeat the process  
   //    break;
   }
 }
 
+function Check() {
+  var folder = DriveApp.getFolderById('1s5YQSeQjcwDZi7t6QsoyVDs1SxRqXf7s');
+  var isPrivate = folder.getSharingAccess();
+  var isView = folder.getSharingPermission();
+  Logger.log(isPrivate,isView);
+  var files = folder.searchFiles('visibility != "limited"');
+  if (files.hasNext() == false) {
+    Logger.log("all files in the directory '" + folder.getName() + "' are already private or there is no such file");
+  }
+  else {
+    while (files.hasNext()) {
+      Logger.log("Removing file permissions for '" + file.getName() + "' in the directory '" + folder.getName() + "'");
+      file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);                        // Restricting access to public files 
+      Logger.log("Completed removing file permissions for '" + file.getName() + "'");
+    }
+  }
+}
+function searchPublicFolder() {
+  var folder = DriveApp.getFolderById('14keq_sg08Na4wF7NHxfoNxZCJYZ3D9S_');
+  searchPublicFolder2(folder);
+}
+function searchPublicFolder2(folder) {
+  var folders = folder.getFolders();
+  while (folders.hasNext()) {
+    var folder = folders.next();
+    var isPrivate = folder.getSharingAccess();
+    var isView = folder.getSharingPermission();
+    if (isPrivate == DriveApp.Access.PRIVATE && (isView == DriveApp.Permission.VIEW || isView == DriveApp.Permission.NONE)) {
+    }
+    else {
+      Logger.log(folder.getName(),folder.getId());
+    }
+    
+  }
+  searchPublicFolder2(folder);                                                                     // Iterate through child folders and repeat the process  
+  //    break;
+}  
+  
 
 // In case the runtime exceeds your limit, just rerun again. It will pass all private files (but not folders)
-
